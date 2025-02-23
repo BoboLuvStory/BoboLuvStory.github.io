@@ -1,20 +1,252 @@
 <!DOCTYPE html>
+<!-- 指定這是一個HTML5文件 -->
 <html lang="zh-TW">
+  <!-- 定義HTML的語言為繁體中文 (台灣) -->
   <head>
+    <!-- HTML的頭部，包含網頁的設定和資源引入 -->
     <meta charset="UTF-8" />
+    <!-- 設定文件的字符編碼為UTF-8，支援多種語言 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Love Fireworks</title>
+    <!-- 設定響應式設計，適應不同設備的螢幕大小 -->
+    <title>三週年快樂</title>
+    <!-- 設定網頁標題，會顯示在瀏覽器標籤上 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <!-- 引入 p5.js 庫，用於動畫與繪圖 -->
+    <style>
+      <!-- 內嵌CSS，用於設計網頁的樣式 -- > body {
+        /* 設定整個網頁的樣式 */
+        font-family: "Arial", sans-serif; /* 設定主要字體為 Arial，若無則使用 sans-serif */
+        background-color: #ffe6e6; /* 背景顏色為淡粉色 */
+        text-align: center; /* 文字置中對齊 */
+        padding: 20px; /* 內邊距為 20px */
+        overflow-x: hidden; /* 隱藏水平滾動條 */
+        margin: 0; /* 取消外邊距 */
+      }
+      .container {
+        /* 定義主要內容區塊的樣式 */
+        max-width: 600px; /* 設定最大寬度為600px */
+        margin: auto; /* 讓區塊置中 */
+        background: white; /* 背景為白色 */
+        padding: 20px; /* 內邊距20px */
+        border-radius: 15px; /* 圓角邊框 */
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* 設定陰影效果 */
+        position: relative; /* 讓其相對定位 */
+        z-index: 2; /* 設定層級，使其在煙火動畫之上 */
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        /* 設定所有標題的顏色 */
+        color: #ff4d4d; /* 紅色 */
+      }
+      p {
+        /* 設定段落樣式 */
+        color: #333; /* 文字顏色為深灰色 */
+        text-align: left; /* 文字左對齊 */
+        line-height: 1.6; /* 行距為1.6倍 */
+      }
+      .button-container {
+        /* 設定按鈕區塊的樣式 */
+        margin-top: 20px; /* 上方間距20px */
+      }
+      .btn {
+        /* 定義按鈕的樣式 */
+        background-color: #ff4d4d; /* 紅色背景 */
+        color: white; /* 文字顏色白色 */
+        font-size: 18px; /* 文字大小18px */
+        padding: 10px 20px; /* 內邊距 */
+        border: none; /* 無邊框 */
+        border-radius: 8px; /* 圓角邊框 */
+        cursor: pointer; /* 滑鼠懸停時變為可點擊指標 */
+        margin: 5px; /* 外邊距 */
+        transition: 0.3s; /* 過渡效果 */
+      }
+      .btn:hover {
+        /* 當滑鼠移到按鈕上時 */
+        background-color: #d63031; /* 深紅色背景 */
+      }
+      /* 煙火 Canvas */
+      canvas {
+        position: fixed; /* 固定於螢幕上 */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none; /* 使其不影響其他互動 */
+        z-index: 1; /* 層級低於主要內容 */
+      }
+
+      .speaker-icon {
+        position: absolute; /* 絕對定位，使其相對於最近的定位祖先（通常是 .volume-controls）進行定位 */
+        top: 3px; /* 距離其包含區塊的頂部 10 像素 */
+        right: calc(10px + 114px); /* 距離其包含區塊的右側 10 像素 */
+        font-size: 24px; /* 設定字體大小為 24 像素，使圖示（🔊）變大 */
+        cursor: pointer; /* 讓鼠標懸停時顯示手形指標，表示可點擊 */
+        color: black; /* 設定圖示顏色為黑色，確保在白色背景上清晰可見 */
+        background: white; /* 設定背景為白色，確保圖示有明顯的背景色 */
+        padding: 5px; /* 設定內邊距為 5 像素，讓圖示與邊框有一定間距 */
+        border-radius: 50%; /* 設定邊框為 50% 的圓角，使其變成圓形 */
+        border: 1px solid #ccc; /* 設定 1 像素的灰色邊框，增加按鈕可視度 */
+      }
+
+      .speaker-icon:hover {
+        transform: scale(1.2); /* 滑鼠懸停時放大 */
+      }
+
+      .volume-controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px; /* 這裡原本可能是 5px，改成 10px 讓按鈕間距更明顯 */
+        background: white;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+
+      .volume-controls button {
+        font-size: 18px;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .volume-controls button:hover {
+        transform: scale(1.2); /* 滑鼠懸停時放大 */
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HTML的主體內容 -->
+    <div class="container">
+      <div class="volume-controls">
+        <div class="speaker-icon" onclick="playNextSound()">🎙️</div>
+        <button onclick="changeMusicVolume(0.1)">🔉</button>
+        <button onclick="changeMusicVolume(0.9)">🔊</button>
+      </div>
+      <!-- 主要內容容器 -->
+      <h1 align="middle">【My LIN BOBO】</h1>
+      <!-- 標題 -->
+      <h2 align="middle">❤️ 三週年紀念日快樂 ❤️</h2>
+      <!-- 副標題 -->
+      <p>
+        我最愛的女人, 經歷了前段時間的大起大落, 原本以為我們的緣分到此結束,
+        沒想到妳卻那麼堅定的選擇我。還記得才剛在一起妳就說自己是一個很容易放棄的人,
+        謝謝妳這次沒有放棄, 還那麼用心的準備行程,
+        原來妳一直默默記得我想去的地方, 真的好感動。 金戒指也是!
+        妳是第一個買金飾給我的人, 當下還以為妳要求婚XD 平常可能沒那麼浪漫,
+        但妳浪漫起來真的沒有哪個女人受的了, 好愛😘 因為有了這次的經歷,
+        我也認知到愛如果能走得長遠,
+        其實兩個人在這個過程及氛圍裡並不會像想像中的萬般美好,
+        也許兩個人從頭到尾只是單純地過著自己的生活,
+        再細心地、溫柔地把對方放進每一天的生活裡。
+        <br />
+        <br />
+
+        很對不起前陣子的我沒有堅持住, 明明一直都知道妳再用妳的方式愛我,
+        也知道妳對我真的很好很用心, 可戀愛腦的我配上總是會考慮現實的妳,
+        需要也了解對方想要什麼, 謝謝妳現在願意再跟我談場一輩子的戀愛,
+        我們好不容易才又再一起, 妳要是不喜歡不開心, 我們都可以溝通,
+        雙方各退一步去找到平衡點, 不要在心裡偷偷減分, 我也捨不得妳一個人難過,
+        <strong>世界上本就沒有天生適合的兩個人, 只有遷就彼此的兩顆心</strong>。
+
+        <br />
+        <br />
+
+        可能在這段和好的初期雙方都會覺得不適應, 因為妳我都有所改變,
+        人是同一個沒錯, 但因為先前不成熟沒有嶄露完整的自己,
+        導致現在的情況如同重新認識一個人, 不是重新愛上,
+        而是願意為了這個人去找到屬於我們的方式去談這場戀愛。
+        雖然常跟妳說朋友們同事們跟哥哥都叫我再觀察,
+        但事實上我根本不覺得要觀察什麼, 我就只想要妳啊,
+        真的要觀察的話就只想觀察我們什麼時候會牽著手走進民政局, 驕傲地說 :
+        「我們要登記結婚。」
+
+        <br />
+        <br />
+
+        這三年間, 我們給予了對方行為上的偏愛、生活上的偏愛、情感上的偏愛,
+        其實我蠻害怕蠻擔心的, 因為之前妳都說時間久了感情會不如從前那般熱烈,
+        但是已經習慣了, 而且是戒不掉的那種, 不想在未來有一方提出 :
+        「我對你的感情像家人，沒有像戀人般的激情,
+        討論我們這段感情是否還要繼續」,
+        因為這時就代表只是想分手的藉口跟理由而已。我想說談戀愛的時間久了,
+        感情會平淡會沒有話題到底是不是定數?
+        當然我們心裡很了解新鮮感是和舊的人去體驗新的事物,
+        而不是和新的人去體驗舊的事物, 當新鮮感退去的時候才是愛真正開始的地方,
+        因為這個時候即是愛人也是家人, 可是對於我來說, 為什麼要讓新鮮感退去?
+        又為什麼新鮮感退去就要趨於平淡? 我們可以在平淡的生活裡製造歡樂製造驚喜,
+        並且不忘對對方貼心, 在乎對方感受等等細節的事, 對吧!
+        現在以結婚為前提交往的我們, 要面對的風雨遠比想像中更多,
+        要相互扶持的走過, 一起做遍世上所有的事、看遍世上所有的景, 並且最重要的,
+        擁有專屬於我們的小窩🏠 願我們次次都能與對方過週年紀念日。
+      </p>
+      <h3 align="middle"><strong> 我愛妳 林倢倢❤️‍🔥 </strong></h3>
+      <h4 align="right">- XIN BOBO[2025.03.14]</h4>
+
+      <!-- 撥放音樂 & 釋放煙火按鈕 -->
+      <div class="button-container">
+        <button class="btn" onclick="toggleMusic()">♫ ▶∥</button>
+        <button class="btn" id="firework-button">🎇 ▶∥</button>
+      </div>
+    </div>
+
+    <!-- 背景音樂 -->
+    <audio id="bg-music">
+      <source src="Love Story.mp3" type="audio/mpeg" />
+      您的瀏覽器不支持音樂播放
+    </audio>
+
     <script>
-      let fireworks = [];
-      let t;
-      let x = [],
+      <!-- JavaScript 腳本 -->
+      document.addEventListener("DOMContentLoaded", function () {
+        let bgMusic = document.getElementById("bg-music");
+        bgMusic.volume = 0.1; // Love Story.mp3 音量固定為 30%
+      });
+
+      let currentTrack = 1; // 記錄目前播放的音樂編號
+      let audioPlayer = new Audio(); // 初始化音樂播放器
+      let musicVolume = 0.5; // 預設 1.mp3 ~ 5.mp3 音量為 50%
+
+      function playNextSound() {
+        // 如果當前音樂正在播放，則暫停
+        if (!audioPlayer.paused && audioPlayer.currentTime > 0) {
+          audioPlayer.pause();
+          return; // 按下第二次時會暫停
+        }
+
+        // 設定新的音樂檔案
+        audioPlayer.src = `${currentTrack}.mp3`;
+        audioPlayer.volume = musicVolume; // 設定音量為使用者調整的大小
+        audioPlayer.play();
+
+        // 切換到下一首音樂
+        currentTrack++;
+        if (currentTrack > 5) {
+          currentTrack = 1; // 循環回 1.mp3
+        }
+      }
+
+      function changeMusicVolume(level) {
+        if (level < 0.1) level = 0.1; // 限制最低音量 10%
+        if (level > 1.0) level = 1.0; // 限制最高音量 100%
+
+        musicVolume = level; // 更新 1.mp3~5.mp3 的音量
+        audioPlayer.volume = level; // 立即應用新的音量
+      }
+
+      let fireworks = []; /* 存放煙火物件的陣列 */
+      let started = false; /* 記錄煙火是否啟動 */
+      let t /* 變數用於畫出愛心形狀 */,
+        x = [],
         y = [];
-      let textAlpha = 0,
-        showText = false,
-        frames = 0;
 
       function setup() {
+        /* 初始化畫布 */
         createCanvas(windowWidth, windowHeight);
         t = Array.from({ length: 100 }, (_, i) => (i * TWO_PI) / 100);
         x = t.map((t) => 16 * pow(sin(t), 3) * 30);
@@ -25,13 +257,13 @@
       }
 
       function draw() {
+        /* 繪製煙火動畫 */
         background(0);
+
+        if (!started) return; // 只有當按鈕被按下後才執行煙火動畫
 
         if (random(1) < 0.05) {
           fireworks.push(new Firework());
-          showText = true;
-          textAlpha = 0; // 重新開始淡入效果
-          frames = 0;
         }
 
         for (let i = fireworks.length - 1; i >= 0; i--) {
@@ -41,23 +273,10 @@
             fireworks.splice(i, 1);
           }
         }
-
-        if (showText) {
-          textAlpha = min(255, textAlpha + 5);
-          frames++;
-          if (frames > 300) {
-            // 文字顯示更久
-            showText = false;
-          }
-
-          fill(255, 0, 0, textAlpha);
-          textSize(100);
-          textAlign(CENTER, CENTER);
-          text("I love you", width / 2, height / 2);
-        }
       }
 
       class Firework {
+        /* 煙火類別 */
         constructor() {
           this.color = color(
             random(200, 255),
@@ -117,7 +336,7 @@
           this.pos = createVector(x, y);
           this.vel = createVector(random(-3, 3), random(-3, 3));
           this.lifetime = random(30, 60);
-          this.size = random(2, 5);
+          this.size = random(6, 10);
           this.color = c;
         }
 
@@ -141,10 +360,22 @@
         }
       }
 
+      document
+        .getElementById("firework-button")
+        .addEventListener("click", function () {
+          started = !started; // 切換煙火狀態
+        });
+
+      function toggleMusic() {
+        /* 控制音樂播放與暫停 */
+        let music = document.getElementById("bg-music");
+        music.paused ? music.play() : music.pause();
+      }
+
       function windowResized() {
+        /* 當視窗大小改變時重設畫布 */
         resizeCanvas(windowWidth, windowHeight);
       }
     </script>
-  </head>
-  <body style="margin: 0; overflow: hidden"></body>
+  </body>
 </html>
